@@ -1,5 +1,6 @@
 # One gate command per line. Run by `prophet gates`.
 # Lines starting with # are ignored.
-# pytest
-# ruff check .
-# mypy src
+.venv/bin/ruff check src tests
+.venv/bin/ruff format --check src tests
+.venv/bin/mypy --strict src
+.venv/bin/pytest -q tests
