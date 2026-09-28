@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Gate every spec edit on `prophet check`.
+#
+# The three rules in the agent files are prose, and prose does not bind an
+# agent. This makes the one that matters mechanical: a hypothesis that cannot
+# be observed never reaches the builder.
+#
+# If you are reading this because a write was blocked, the spec's Outcome
+# line is not falsifiable. Run the command below to see which rule it breaks.
+
+set -euo pipefail
+
+FILE="${CLAUDE_FILE_PATHS:-}"
+[ -z "$FILE" ] && exit 0
+
+# Normalise: Claude Code may pass an absolute path, a project-relative one, or
+# a leading "./". Only the tail matters.
+base="$(basename "$(dirname "$FILE")")/$(basename "$FILE")"
+[ "$base" = ".prophet/spec.md" ] || exit 0
+
+if ! output=$(python3 -m tools.prophet check 2>&1); then
+  echo "spec.md rejected by prophet check:" >&2
+  echo "$output" >&2
+  exit 2
+fi
+exit 0

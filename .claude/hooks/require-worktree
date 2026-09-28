@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Keep builder inside its worktree.
+#
+# The builder.md rule "do not touch anything outside your branch" is the one
+# that protects main from a slice that grows. Worktrees make that mechanical:
+# if the cwd is a worktree, everything it writes is already isolated.
+
+set -euo pipefail
+
+WT=".prophet-worktrees"
+[ -d "$WT" ] || exit 0
+
+# If we are not inside a worktree, the builder is working on main directly.
+case "$PWD" in
+  "$WT"/*) exit 0 ;;
+esac
+
+# Allow the non-builder roles to touch main; only warn so it is visible.
+if [ -n "${CLAUDE_AGENT:-}" ] && [ "$CLAUDE_AGENT" != "builder" ]; then
+  exit 0
+fi
+
+echo "warning: builder is editing on $(basename "$PWD"), not in a worktree." >&2
+echo "         python3 -m tools.prophet new <slug>  creates an isolated one." >&2
+exit 0
