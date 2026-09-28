@@ -129,6 +129,27 @@ constraint, a rejected approach — record it in `.prophet/DECISIONS.md` with th
 date, the choice, and why. One line each, no essays. The value is in being able
 to ask "why did we decide X" in six months and getting an answer.
 
+## Where the project is
+
+`.prophet/NOW.md` answers three things and nothing else:
+
+1. **What is true now** — built, probed, and a human has looked at it.
+2. **What is still an experiment** — works once, no one depends on it.
+3. **The observable threshold** that would justify the next step.
+
+It is not a roadmap and never will be. "Complete phase 2" is not a threshold.
+"Every event for one pool arrives in under 3 minutes and the count matches the
+official endpoint" is — someone can check it.
+
+Rewrite it when the answer to any of the three changes. A stale `NOW.md` is
+worse than none: it will be read as current and believed.
+
+**Phases in this project are MVP and production.** MVP is where we are: get one
+question answered with real data, tolerate a stack trace. Production is the
+same answer, reliably and unattended, with a coverage floor, integration tests,
+and degradation instead of exceptions. Promotion is a decision against a stated
+threshold, not a phase on a schedule.
+
 ## Rules
 
 - Do not write to the repository outside `.prophet/`. You are not implementing.

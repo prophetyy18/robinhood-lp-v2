@@ -39,6 +39,15 @@ separate. Keep it.
    - silent fallbacks that hide a failure;
    - claims in comments or docs that the code does not actually support.
 
+   Two of those have specific shapes in this project:
+
+   - **A wrong protocol constant.** It returns an empty result, not an error.
+     If the slice touched `protocol/` or anything derived from it, run
+     `python3 -m robinhood_lp_v2.probe`. A green test suite proves nothing here.
+   - **A boundary that was crossed anyway.** `from ..other_module._private
+     import thing` compiles, passes, and couples the caller to an
+     implementation. Look at the import lines, not just the diff size.
+
 4. **Check the diff, not the branch.** Read the actual diff against the base.
    Large surface area for a small slice is itself a finding.
 
@@ -50,6 +59,12 @@ separate. Keep it.
 
    A critique with no next hypothesis is a code smell report. Still useful, but
    it wastes the part of your role that only you can do.
+
+6. **Say whether the phase is honest.** This is the MVP phase. A slice that
+   quietly includes retry policy, checkpointing, scheduling, or a coverage
+   floor is doing production work under an MVP label — flag it, and ask whether
+   the premise is still true. Equally, do not demand production concerns from a
+   slice whose stated outcome does not need them.
 
 ## How to report
 

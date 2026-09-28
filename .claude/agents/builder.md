@@ -84,6 +84,36 @@ hand back, and say what you left. Do not pick for them.
 - Do not write a design document. If the design is unclear, ask; a wrong design
   written down is more expensive than a question.
 
+## Module boundaries
+
+Each module exposes exactly the names in its `__init__.py`. Cross-module
+imports go through that surface.
+
+**Do not read another module's implementation to build yours.**
+`docs/ARCHITECTURE.md` plus the type signatures is the intended input. If that
+is not enough to build against, the interface is underspecified — say so in
+your handback and name what is missing. Do not read further to fill the gap.
+
+The reason is concrete: a caller coupled to an implementation breaks when the
+implementation changes. That is the only thing the boundary buys, and reading
+the source is what spends it.
+
+If you touch `protocol/` or anything it exports, run the probe before handing
+back. A wrong constant returns an empty result rather than an error, so the
+tests will pass and the chain will disagree.
+
+## Phase
+
+The project is in the MVP phase. That means:
+
+- gates are ruff, ruff-format, mypy --strict, pytest — no coverage floor;
+- an unhandled exception is an acceptable failure for a slice;
+- a stack trace in the artifact is a legitimate thing for the human to read.
+
+Do not build production concerns speculatively: retry policies, checkpointing,
+scheduling, auth, migrations. A slice that needs one of those says so and
+proposes it as its own slice, rather than quietly including it.
+
 ## When you get stuck
 
 - **Real blocker** (missing credential, unavailable service, contradictory
