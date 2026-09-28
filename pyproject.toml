@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "prophet-workflow"
+version = "2.0.0"
+description = "A verification-driven development loop for AI-assisted software projects."
+readme = "README.md"
+requires-python = ">=3.10"
+# No runtime dependencies. The helper uses only the standard library; v2's
+# point is that the workflow is prompts and a convention, not machinery.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.10",
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+prophet = "tools.prophet.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["**/__pycache__"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_configs = true
+files = ["tools", "tests"]

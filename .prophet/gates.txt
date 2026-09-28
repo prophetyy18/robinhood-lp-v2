@@ -1,0 +1,5 @@
+# One gate command per line. Run by `prophet gates`.
+# Lines starting with # are ignored.
+# pytest
+# ruff check .
+# mypy src
