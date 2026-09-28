@@ -1,6 +1,11 @@
 # One gate command per line. Run by `prophet gates`.
 # Lines starting with # are ignored.
-.venv/bin/ruff check src tests
-.venv/bin/ruff format --check src tests
-.venv/bin/mypy --strict src
+#
+# MVP phase: no coverage floor, no integration test. `tools/check_boundaries.py`
+# is the one check added here, because module boundaries are the mechanism the
+# whole design rests on and prose does not hold them.
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/mypy
 .venv/bin/pytest -q tests
+.venv/bin/python tools/check_boundaries.py

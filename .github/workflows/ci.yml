@@ -1,0 +1,113 @@
+# GitHub Actions — main CI gate.
+#
+# Every action is pinned to a full commit SHA. Floating tags are forbidden:
+# a tag can be moved, and a moved tag is a changed build that nobody reviewed.
+# Bumping a pin requires reading the upstream release notes.
+#
+# The three jobs mirror the three ways a slice can look finished and be wrong:
+#   quality  — the gates pass
+#   protocol — the constants still match the chain
+#   imports  — the module boundaries still hold
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  quality:
+    name: Quality gate (ruff, mypy, pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.6.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Ruff format
+        run: ruff format --check .
+
+      - name: mypy
+        run: mypy
+
+      - name: pytest
+        run: pytest -q --cov --cov-report=term-missing
+
+  protocol:
+    name: Protocol constants match the chain
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A wrong constant returns an empty log result, not an error. Only the
+    # probe catches it, and the unit tests cannot: they assert the same
+    # constants they are testing.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.6.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e "."
+
+      - name: Probe the official endpoint
+        env:
+          ROBINHOOD_OFFICIAL_RPC_URL: ${{ secrets.ROBINHOOD_OFFICIAL_RPC_URL }}
+        run: |
+          if [ -z "$ROBINHOOD_OFFICIAL_RPC_URL" ]; then
+            echo "::warning::ROBINHOOD_OFFICIAL_RPC_URL not configured; skipping"
+            exit 0
+          fi
+          python -m robinhood_lp_v2.probe --no-reference-check
+
+  imports:
+    name: Module boundaries hold
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.6.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Check cross-module imports
+        run: python tools/check_boundaries.py

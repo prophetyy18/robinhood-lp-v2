@@ -10,6 +10,11 @@ __pycache__/
 dist/
 *.egg-info/
 
+# Coverage data is a run artifact, not a source file.
+.coverage
+.coverage.*
+htmlcov/
+
 # Workflow runtime state and per-slice worktrees.
 # `.prophet/` is NOT ignored: spec.md / LOG.md / DECISIONS.md are the
 # project's thinking and belong in version control.
